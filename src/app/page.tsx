@@ -1,101 +1,185 @@
+"use client";
+
+import { useState, useRef } from "react";
 import Image from "next/image";
+import Logo from "./slidefy_logo.png";
 
-export default function Home() {
+type Aula = {
+  titulo: string;
+  subtitulo: string;
+  conteudo: string;
+};
+
+type AulasResponse = {
+  [key: string]: Aula;
+};
+
+const UploadPage = () => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [message, setMessage] = useState<string>("");
+  const [aulas, setAulas] = useState<AulasResponse[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null); // Referência para o input do arquivo
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]);
+      setMessage("");
+      setAulas([]);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setMessage("");
+    setAulas([]);
+
+    // Limpa o valor do input de arquivo
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!selectedFile) {
+      setMessage("Por favor, selecione um arquivo.");
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const response = await fetch("http://localhost:3001/openai/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      console.log(result);
+
+      if (response.ok) {
+        setAulas(result.aulas);
+        setMessage("Apresentação criada com sucesso!");
+      } else {
+        setMessage(`Erro: ${result.message}`);
+      }
+    } catch {
+      setMessage("Erro ao criar apresentação.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logoSlidefy = Logo;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-md rounded px-8 py-6 w-full max-w-md">
+        <div className="flex justify-center mb-4">
+          <Image
+            src={logoSlidefy}
+            alt="Logo Slidefy"
+            width={200}
+            height={200}
+            className="object-contain"
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+          <label className="block">
+            <span className="sr-only">Escolher arquivo</span>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="hidden"
+              id="file-input"
+              ref={fileInputRef} // Atribui a referência ao input
+            />
+            <label
+              htmlFor="file-input"
+              className="cursor-pointer w-full bg-[#1A8CE3] hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 inline-block flex flex-row justify-center text-center"
+            >
+              {selectedFile ? (
+                <div className="flex items-center space-x-4">
+                  <span>{selectedFile.name}</span>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="text-[#FFFFFF]"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                "Escolher arquivo"
+              )}
+            </label>
+          </label>
+
+          <button
+            type="submit"
+            className="text-white bg-[#1A8CE3] hover:bg-blue-600 font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
+          >
+            <p>Gerar slides</p>
+            {loading && (
+              <div className="animate-spin">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="23 4 23 10 17 10" />
+                  <polyline points="1 20 1 14 7 14" />
+                  <path d="M3.51 9a9 9 0 0114.38-4.63L23 10M1 14l5.1 5.1A9 9 0 0020.49 15" />
+                </svg>
+              </div>
+            )}
+          </button>
+        </form>
+
+        {message && (
+          <p className="mt-4 text-center text-gray-600 bg-gray-100 p-2 rounded-md">
+            {message}
+          </p>
+        )}
+
+        {aulas.length > 0 && (
+          <div className="mt-8">
+            {aulas.map((aula, index) => {
+              const aulaKey = Object.keys(aula)[0];
+              const aulaData = aula[aulaKey];
+
+              return (
+                <div
+                  key={index}
+                  className="bg-white p-4 mb-4 border rounded shadow"
+                >
+                  <h2 className="text-xl font-medium">
+                    {aulaData.titulo || "Sem título"}
+                  </h2>
+                  <h3 className="text-lg font-semibold">
+                    {aulaData.subtitulo || "Sem subtítulo"}
+                  </h3>
+                  <p className="text-gray-700 mt-2">
+                    {aulaData.conteudo || "Sem conteúdo"}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default UploadPage;
