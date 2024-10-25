@@ -19,7 +19,7 @@ const UploadPage = () => {
   const [message, setMessage] = useState<string>("");
   const [aulas, setAulas] = useState<AulasResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null); // Referência para o input do arquivo
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -34,7 +34,6 @@ const UploadPage = () => {
     setMessage("");
     setAulas([]);
 
-    // Limpa o valor do input de arquivo
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -97,7 +96,7 @@ const UploadPage = () => {
               onChange={handleFileChange}
               className="hidden"
               id="file-input"
-              ref={fileInputRef} // Atribui a referência ao input
+              ref={fileInputRef}
             />
             <label
               htmlFor="file-input"
@@ -119,31 +118,32 @@ const UploadPage = () => {
               )}
             </label>
           </label>
-
-          <button
-            type="submit"
-            className="text-white bg-[#1A8CE3] hover:bg-blue-600 font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-          >
-            <p>Gerar slides</p>
-            {loading && (
-              <div className="animate-spin">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-white"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="23 4 23 10 17 10" />
-                  <polyline points="1 20 1 14 7 14" />
-                  <path d="M3.51 9a9 9 0 0114.38-4.63L23 10M1 14l5.1 5.1A9 9 0 0020.49 15" />
-                </svg>
-              </div>
-            )}
-          </button>
+          {selectedFile && (
+            <button
+              type="submit"
+              className="text-white bg-[#1A8CE3] hover:bg-blue-600 font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
+            >
+              <p>Gerar slides</p>
+              {loading && (
+                <div className="animate-spin">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-white"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="23 4 23 10 17 10" />
+                    <polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0114.38-4.63L23 10M1 14l5.1 5.1A9 9 0 0020.49 15" />
+                  </svg>
+                </div>
+              )}
+            </button>
+          )}
         </form>
 
         {message && (
